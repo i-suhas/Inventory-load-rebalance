@@ -1,9 +1,16 @@
 import { db } from "../../db/index.js";
-import { sales, inventory, returns, forecasts, recommendations, transfers } from "../../db/schema.js";
+import { sales, inventory, forecasts, recommendations, transfers } from "../../db/schema.js";
 import { eq, desc, and, sql } from "drizzle-orm";
 import Anthropic from "@anthropic-ai/sdk";
 
 const anthropic = new Anthropic();
+
+type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
+
+function toSerializableDate(value: Date | string | null) {
+  if (value instanceof Date) return value.toISOString();
+  return value;
+}
 
 // ── Data fetchers ──────────────────────────────────────────────────────────────
 
@@ -42,7 +49,12 @@ export async function getAllForecasts() {
 }
 
 export async function getAllRecommendations() {
-  return db.select().from(recommendations).orderBy(desc(recommendations.created_at)).limit(50);
+  const rows = await db.select().from(recommendations).orderBy(desc(recommendations.created_at)).limit(50);
+  return rows.map(row => ({
+    ...row,
+    details: row.details as JsonValue,
+    created_at: toSerializableDate(row.created_at),
+  }));
 }
 
 export async function getAllTransfers() {
@@ -163,7 +175,7 @@ export async function generateRecommendations() {
       .sort((a, b) => b.stock - a.stock);
 
     let action = "Procure Inventory";
-    let details: Record<string, unknown> = { deficit, product: item.product, target: item.warehouse };
+    let details: { [key: string]: JsonValue } = { deficit, product: item.product, target: item.warehouse };
 
     if (surplusWarehouses.length > 0) {
       action = "Transfer Inventory";
@@ -222,11 +234,15 @@ export async function getDashboardData() {
 
   return {
     summary: { totalStock, criticalCount, highCount, totalWarehouses: 4, totalProducts: 5 },
-    inventory: inv,
+    inventory: inv.map(item => ({ ...item, updated_at: toSerializableDate(item.updated_at) })),
     risk: riskData,
-    forecasts: allForecasts,
+    forecasts: allForecasts.map(item => ({
+      ...item,
+      forecast_date: toSerializableDate(item.forecast_date),
+      created_at: toSerializableDate(item.created_at),
+    })),
     recommendations: allRecs,
-    transfers: allTransfers,
+    transfers: allTransfers.map(item => ({ ...item, created_at: toSerializableDate(item.created_at) })),
     salesAggregated: aggSales,
   };
 }

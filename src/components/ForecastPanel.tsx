@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { BrainCircuit, GitBranch, Target, Zap } from "lucide-react";
 import {
   LineChart,
   Line,
@@ -97,9 +98,10 @@ export default function ForecastPanel({
         <button
           onClick={onRunForecast}
           disabled={loading}
-          className="px-4 py-1.5 text-sm rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition disabled:opacity-50"
+          className="px-4 py-1.5 text-sm rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition disabled:opacity-50 inline-flex items-center gap-2"
         >
-          {loading ? "Running…" : "⚡ Run AI Forecast"}
+          <Zap size={15} aria-hidden="true" />
+          {loading ? "Running..." : "Run AI Forecast"}
         </button>
       </div>
 
@@ -112,7 +114,7 @@ export default function ForecastPanel({
             value={latestForecast.xgb_forecast ?? 0}
             weight="40%"
             color="from-blue-600/20 border-blue-500/30"
-            icon="🌲"
+            icon={GitBranch}
           />
           <ModelCard
             title="TFT (AI)"
@@ -120,7 +122,7 @@ export default function ForecastPanel({
             value={latestForecast.tft_forecast ?? 0}
             weight="60%"
             color="from-violet-600/20 border-violet-500/30"
-            icon="🧠"
+            icon={BrainCircuit}
           />
           <ModelCard
             title="Ensemble"
@@ -128,14 +130,14 @@ export default function ForecastPanel({
             value={latestForecast.ensemble_forecast ?? 0}
             weight="final"
             color="from-emerald-600/20 border-emerald-500/30"
-            icon="🎯"
+            icon={Target}
             highlight
             confidence={latestForecast.confidence ?? 0}
           />
         </div>
       ) : (
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-8 text-center">
-          <p className="text-gray-400">No forecasts yet. Click "⚡ Run AI Forecast" to generate predictions.</p>
+          <p className="text-gray-400">No forecasts yet. Click "Run AI Forecast" to generate predictions.</p>
         </div>
       )}
 
@@ -200,7 +202,7 @@ function ModelCard({
   value,
   weight,
   color,
-  icon,
+  icon: Icon,
   highlight = false,
   confidence,
 }: {
@@ -209,7 +211,7 @@ function ModelCard({
   value: number;
   weight: string;
   color: string;
-  icon: string;
+  icon: typeof BrainCircuit;
   highlight?: boolean;
   confidence?: number;
 }) {
@@ -218,7 +220,7 @@ function ModelCard({
       className={`bg-gradient-to-br ${color} border rounded-xl p-5 ${highlight ? "ring-1 ring-emerald-500/30" : ""}`}
     >
       <div className="flex items-center justify-between mb-2">
-        <span className="text-lg">{icon}</span>
+        <Icon size={20} aria-hidden="true" />
         <span className="text-xs text-gray-500 bg-gray-800 px-2 py-0.5 rounded-full">
           weight: {weight}
         </span>

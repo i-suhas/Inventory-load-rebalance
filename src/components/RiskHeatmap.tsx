@@ -92,7 +92,7 @@ export default function RiskHeatmap({ risk }: { risk: RiskItem[] }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {risk
             .filter(r => r.risk === "CRITICAL" || r.risk === "HIGH")
-            .sort((a, b) => (a.risk === "CRITICAL" ? -1 : 1))
+            .sort((a) => (a.risk === "CRITICAL" ? -1 : 1))
             .map(item => (
               <div key={`${item.warehouse}-${item.product}`} className={`rounded-xl border p-4 ${RISK_BG[item.risk]}`}>
                 <div className="flex items-start justify-between mb-2">
